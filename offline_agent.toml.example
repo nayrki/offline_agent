@@ -1,0 +1,61 @@
+# Example offline-agent configuration.
+# Copy to offline_agent.toml (or set OFFLINE_AGENT_CONFIG=/path/to/file).
+# Env overrides: OFFLINE_AGENT_BACKEND__MODE=remote, etc.
+
+[backend]
+# Default is remote-first: prefer the configured OpenAI-compatible server, and
+# fall back to the in-process llama.cpp model if it's unreachable at session start.
+mode = "remote"         # "remote" (OpenAI-compatible) | "local" (in-process llama.cpp)
+fallback_to_local = true # in remote mode, load the local model if the server is down
+# Per-model tool format. "auto" (default) derives it from the active model: the
+# local GGUF's general.architecture or the remote served model id -- a gpt-oss
+# model gets the in-process Harmony parser, everything else falls through to
+# "default" (server-/template-native tool calling). Override with a named
+# handler: "default", "llama3", "mistral", "gemma", "functionary",
+# "chatml-function-calling" (ChatML models lacking tool support), or "gpt-oss"
+# (force the Harmony parser; llama_cpp has no Harmony tool handler).
+chat_handler = "auto"
+
+[local]
+# Path is relative to the agent's working directory (the repo root when launched
+# from there); use an absolute path if you run the agent from elsewhere.
+model_path = "deps/models/gpt-oss-20b-mxfp4.gguf"  # vendored via Git LFS
+n_gpu_layers = -1       # -1 = offload all; runtime falls back to 0 (CPU) on failure
+n_ctx = 32768
+use_kv_snapshot = false # explicit save_state prefix reuse (opt-in; suspect on GPU)
+
+[remote]
+# OpenAI-compatible endpoint. LM Studio defaults to :1234, Ollama to :11434.
+base_url = "http://localhost:1234/v1"
+api_key = "EMPTY"                       # ignored by local servers; SDK requires a value
+# Set to the model id your server has loaded (see GET /v1/models). Under
+# chat_handler="auto" this id also selects the remote format (e.g. a gpt-oss id
+# -> Harmony; anything else -> "default", letting the server own the template and
+# tool parsing). E.g. "google/gemma-4-12b-qat", "meta-llama/Llama-3.1-8B-Instruct".
+model = "google/gemma-4-12b-qat"
+# Reasoning budget for thinking models, sent as reasoning_effort (servers that
+# don't recognize it ignore it). "" keeps the model default. NOTE for Gemma-4-qat:
+# thinking is recommended in theory, but in practice it reasons 2k+ tokens per turn
+# and truncates tool calls, and "low"/"medium" are NOT honored (≈ full) -- so "none"
+# is the only effective dial-down and the reliable choice. Pair with max_tokens.
+reasoning_effort = "none"
+guided_decoding_backend = "auto"
+force_native_tools = false
+connect_timeout = 5.0                   # liveness-probe timeout that gates local failover
+
+[sampling]
+temperature = 0.0
+top_p = 1.0
+# 4096 is ample with thinking off (tool calls are short); a smaller output budget
+# also leaves more of the context window for the (growing) prompt. Must fit within
+# the remote model's loaded context (prompt + max_tokens); raise both together if a
+# task needs very long tool arguments.
+max_tokens = 4096
+seed = 0
+
+[constraints]
+tool_call_mode = "native"   # "native" | "json_schema" | "grammar"
+max_tool_turns = 20
+
+[fs]
+allow_write = true

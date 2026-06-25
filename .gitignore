@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+/build/
+/dist/
+
+# Vendored wheels/sdists are large; tracked via Git LFS (see .gitattributes).
+
+# Model weights are too large to host -- keep them local only.
+# Download into deps/models/; see deps/models/models.md for links.
+deps/models/*.gguf

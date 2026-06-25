@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "offline-agent"
+version = "0.1.0"
+description = "Locally-hosted, offline agentic coding agent for Jupyter AI 3 (ACP)"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "BSD-3-Clause" }
+authors = [{ name = "Ryan Kitchen" }]
+
+# Core runtime deps for the AGENT subprocess. Intentionally lightweight:
+# llama-cpp-python is NOT declared here -- the offline installer builds it from
+# the vendored sdist with platform-targeted CMAKE_ARGS (see scripts/install.py),
+# so this package stays installable on remote-only (no-GPU) nodes.
+dependencies = [
+    "agent-client-protocol>=0.10,<0.11",
+    "mcp>=1.0",
+    "openai>=1.30",
+    "pydantic>=2",
+    "pydantic-settings>=2.2",
+]
+
+[project.optional-dependencies]
+# Installed inside the JupyterLab environment so the persona can register.
+# Pulls the full Jupyter AI stack, hence kept out of core.
+jupyter = ["jupyter-ai-acp-client"]
+# Convenience marker; the installer manages the real build from deps/sdist.
+local = ["llama-cpp-python"]
+dev = ["pytest", "pytest-asyncio", "jsonschema"]
+
+[project.scripts]
+offline-agent = "offline_agent.agent.main:cli"
+offline-agent-install = "offline_agent.install.cli:main"
+
+[project.entry-points."jupyter_ai.personas"]
+offline_agent = "offline_agent.persona:OfflineAgentPersona"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/offline_agent"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

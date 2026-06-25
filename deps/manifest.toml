@@ -1,0 +1,25 @@
+# Pinned vendoring manifest for offline install.
+#
+# `offline-agent-install` installs the runtime closure from deps/runtime/ and
+# BUILDS llama-cpp-python from the sdist in deps/sdist/ against the local GPU
+# compute capability (CPU fallback otherwise). deps/build/ holds the Python
+# build-backend wheels needed for offline build isolation.
+#
+# Populate with: python scripts/populate_deps.py   (run natively on each OS)
+
+[llama_cpp]
+# Build from source -- vendor the sdist, not a prebuilt wheel.
+# Leave version empty to track the latest at populate time.
+version = ""
+sdist = true
+# llama-cpp-python's own runtime deps; vendored into deps/runtime so the
+# from-source build resolves them under --no-index.
+runtime_deps = ["numpy", "diskcache", "jinja2"]
+
+[build_requires]
+# Installed before building (we use --no-build-isolation for fully offline builds).
+packages = ["scikit-build-core", "ninja", "cmake"]
+
+[runtime]
+# The rest of the dependency closure (resolved from pyproject) goes in deps/runtime/.
+extras = []
