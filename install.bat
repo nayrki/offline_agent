@@ -20,6 +20,7 @@ rem   install.bat --jupyter        : also pull the ACP bridge (jupyter extra)
 rem   install.bat --lab            : also pull the full JupyterLab + Jupyter AI host stack
 rem   install.bat --offline        : air-gapped llama build from deps\ (implies --llama)
 rem   install.bat --server-url URL : set the remote server address non-interactively
+rem   install.bat --no-win-patch   : skip the Windows event-loop fix (see WINDOWS.md)
 rem   install.bat --help
 rem
 rem Override the interpreter with:  set PYTHON=C:\path\to\python.exe
@@ -36,6 +37,9 @@ set "WITH_LLAMA=0"
 set "WITH_JUPYTER=0"
 set "WITH_LAB=0"
 set "OFFLINE=0"
+rem Apply Windows runtime fixes (Proactor event loop) by default; --no-win-patch
+rem opts out.
+set "WITH_WIN_PATCH=1"
 rem Empty => prompt interactively (blank answer keeps the existing value).
 rem A value via --server-url skips the prompt entirely.
 set "SERVER_URL="
@@ -52,6 +56,7 @@ if /i "!A!"=="--no-llama"   ( set "WITH_LLAMA=0" & shift & goto parse )
 if /i "!A!"=="--jupyter"    ( set "WITH_JUPYTER=1" & shift & goto parse )
 if /i "!A!"=="--lab"        ( set "WITH_LAB=1" & shift & goto parse )
 if /i "!A!"=="--offline"    ( set "OFFLINE=1" & set "WITH_LLAMA=1" & shift & goto parse )
+if /i "!A!"=="--no-win-patch" ( set "WITH_WIN_PATCH=0" & shift & goto parse )
 if /i "!A!"=="--server-url" ( set "SERVER_URL=%~2" & set "SERVER_URL_SET=1" & shift & shift & goto parse )
 if /i "!A:~0,13!"=="--server-url=" ( set "SERVER_URL=!A:~13!" & set "SERVER_URL_SET=1" & shift & goto parse )
 if /i "!A!"=="-h"           goto usage
@@ -100,6 +105,15 @@ if defined SERVER_URL (
 ) else (
     echo == keeping server address "%CURRENT%" ==
 )
+
+rem --- 2b. Windows runtime fixes (Jupyter <-> ACP subprocess) ---------------
+rem Forces the Proactor event loop so the agent subprocess can spawn under
+rem JupyterLab. Best-effort: soft-skips if the Jupyter stack isn't installed,
+rem and a failure here does not abort the install. See WINDOWS.md.
+rem Single-line ifs (not a parenthesized block) so a '(' / ')' in the install
+rem path -- e.g. "Program Files (x86)" -- can't break block parsing.
+if "%WITH_WIN_PATCH%"=="1" call "%~dp0patch_windows.bat"
+if "%WITH_WIN_PATCH%"=="0" echo == skipping Windows event-loop patch ^(--no-win-patch^) ==
 
 rem --- 3. The local model runtime (opt-in) ----------------------------------
 :llama
@@ -170,5 +184,6 @@ echo   install.bat --jupyter        : also pull the ACP bridge (jupyter extra)
 echo   install.bat --lab            : also pull the full JupyterLab + Jupyter AI host stack
 echo   install.bat --offline        : air-gapped llama build from deps\ (implies --llama)
 echo   install.bat --server-url URL : set the remote server address non-interactively
+echo   install.bat --no-win-patch   : skip the Windows event-loop fix (see WINDOWS.md)
 echo   install.bat --help
 goto :eof

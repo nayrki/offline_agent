@@ -47,6 +47,10 @@ install.bat --server-url URL :: set the remote server address non-interactively
 install.bat --help
 ```
 
+`install.bat` also applies a required Windows event-loop fix by default (so the
+agent subprocess can spawn under JupyterLab). See **[WINDOWS.md](WINDOWS.md)** for
+the Windows setup details, the uv/Python-version gotchas, and troubleshooting.
+
 For a plain pip flow, `requirements.txt` mirrors the runtime deps and includes
 the CUDA llama-cpp line (`llama-cpp-python -C cmake.args="-DGGML_CUDA=on"`):
 
