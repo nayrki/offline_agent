@@ -46,6 +46,15 @@ offline-agent-install = "offline_agent.install.cli:main"
 [project.entry-points."jupyter_ai.personas"]
 offline_agent = "offline_agent.persona:OfflineAgentPersona"
 
+[tool.uv]
+# jupyter-ai-acp-client (all releases, through 0.1.5) hard-caps
+# agent-client-protocol at <0.10.0, but the agent is written and verified
+# against ACP 0.10.x. The combo (acp-client 0.1.5 + ACP 0.10.1) is runtime-
+# compatible -- only the upstream metadata forbids it -- so force 0.10.x here.
+# uv-only (pip ignores [tool.uv]); does not propagate into the built wheel.
+# Revisit if jupyter-ai-acp-client publishes a release that allows ACP >=0.10.
+override-dependencies = ["agent-client-protocol>=0.10,<0.11"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/offline_agent"]
 
