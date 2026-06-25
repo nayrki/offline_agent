@@ -25,8 +25,16 @@ dependencies = [
 
 [project.optional-dependencies]
 # Installed inside the JupyterLab environment so the persona can register.
-# Pulls the full Jupyter AI stack, hence kept out of core.
-jupyter = ["jupyter-ai-acp-client"]
+# The ACP bridge Jupyter AI uses to reach the agent; floored at the verified
+# version. Kept out of core so remote-only (no-GPU) nodes stay lightweight.
+jupyter = ["jupyter-ai-acp-client>=0.1.5"]
+# Full JupyterLab host environment (mirrors supplemental_requirements.txt):
+# the JupyterLab + Jupyter AI stack plus the ACP bridge from [jupyter] above.
+lab = [
+    "offline-agent[jupyter]",
+    "jupyterlab>=4.5.8",
+    "jupyter-ai>=3.0.0",
+]
 # Convenience marker; the installer manages the real build from deps/sdist.
 local = ["llama-cpp-python"]
 dev = ["pytest", "pytest-asyncio", "jsonschema"]

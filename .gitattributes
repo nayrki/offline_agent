@@ -1,3 +1,6 @@
+# Windows batch files must keep CRLF endings to run reliably under cmd.exe.
+*.bat text eol=crlf
+
 deps/**/*.tar.gz filter=lfs diff=lfs merge=lfs -text
 deps/**/*.whl filter=lfs diff=lfs merge=lfs -text
 # Model weights (*.gguf) are NOT tracked -- too large to host. See

@@ -1,0 +1,19 @@
+# Supplemental requirements for the JupyterLab host environment.
+#
+#   pip install -r supplemental_requirements.txt
+#
+# These are NOT needed by the agent subprocess itself (see requirements.txt /
+# pyproject.toml for that). Install them in the environment that runs
+# JupyterLab so Jupyter AI is present and the offline_agent persona can
+# register over ACP via jupyter-ai-acp-client.
+#
+# Versions are floored at what this project was developed/verified against.
+
+# --- JupyterLab + Jupyter AI ----------------------------------------------
+jupyterlab>=4.5.8
+jupyter-ai>=3.0.0
+
+# --- ACP bridge -----------------------------------------------------------
+# Lets Jupyter AI talk to the offline agent over the Agent Client Protocol.
+# This is the same dependency declared by the `jupyter` extra in pyproject.toml.
+jupyter-ai-acp-client>=0.1.5

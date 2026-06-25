@@ -21,14 +21,30 @@ See `claude.md` for the original design constraints.
 
 ## 1. Install
 
-**Quick start** — the root `install.sh` ties the steps below together:
+**Quick start** — the root `install.sh` (or `install.bat` on Windows) ties the
+steps below together. By default it installs only the lightweight agent package
+and prompts for the local model server address (blank keeps the current value);
+the `llama-cpp-python` runtime is opt-in:
 
 ```bash
-./install.sh            # editable agent install + CUDA llama-cpp build
-./install.sh --cpu      # CPU-only llama-cpp build
-./install.sh --jupyter  # also pull the Jupyter AI persona stack
-./install.sh --offline  # air-gapped build from the vendored deps/ tree
+./install.sh                  # agent package only (no model runtime) + configure server
+./install.sh --llama          # also build llama-cpp-python with CUDA offload
+./install.sh --cpu            # also build llama-cpp-python, CPU-only (implies --llama)
+./install.sh --jupyter        # also pull the ACP bridge (jupyter extra)
+./install.sh --lab            # also pull the full JupyterLab + Jupyter AI host stack
+./install.sh --offline        # air-gapped llama build from deps/ (implies --llama)
+./install.sh --server-url URL # set the remote server address non-interactively
 ./install.sh --help
+```
+
+On Windows, use the batch equivalent with the same flags:
+
+```bat
+install.bat                  :: agent package only + configure server
+install.bat --llama          :: also build llama-cpp-python with CUDA offload
+install.bat --lab            :: also pull the full JupyterLab + Jupyter AI host stack
+install.bat --server-url URL :: set the remote server address non-interactively
+install.bat --help
 ```
 
 For a plain pip flow, `requirements.txt` mirrors the runtime deps and includes
