@@ -6,6 +6,7 @@ import types
 
 import pytest
 
+from offline_agent.backends.base import OutputConstraint, SamplingParams
 from offline_agent.backends.remote_openai import RemoteOpenAIBackend
 from offline_agent.config import Config
 
@@ -32,10 +33,14 @@ async def _empty_stream():
     yield  # pragma: no cover - makes this an async generator
 
 
+def _chunk(*, content=None, tool_calls=None, finish_reason=None):
+    delta = types.SimpleNamespace(content=content, tool_calls=tool_calls, model_extra={})
+    choice = types.SimpleNamespace(delta=delta, finish_reason=finish_reason)
+    return types.SimpleNamespace(choices=[choice])
+
+
 @pytest.mark.asyncio
 async def test_reasoning_effort_forwarded_in_extra_body():
-    from offline_agent.backends.base import OutputConstraint, SamplingParams
-
     b = _backend(reasoning_effort="none")
     captured = {}
 
@@ -51,8 +56,6 @@ async def test_reasoning_effort_forwarded_in_extra_body():
 
 @pytest.mark.asyncio
 async def test_reasoning_effort_omitted_when_unset():
-    from offline_agent.backends.base import OutputConstraint, SamplingParams
-
     b = _backend(reasoning_effort="")  # explicitly unset (default is "")
     captured = {}
 
@@ -188,10 +191,40 @@ async def test_make_backend_keeps_remote_when_fallback_disabled(monkeypatch):
 
 
 def test_sampling_kwargs_splits_top_k_into_extra_body():
-    from offline_agent.backends.base import SamplingParams
-
     b = _backend()
     kwargs, extra = b._sampling_kwargs(SamplingParams(temperature=0.3, top_k=40, seed=7))
     assert kwargs["temperature"] == 0.3
     assert kwargs["seed"] == 7
     assert extra["top_k"] == 40
+
+
+@pytest.mark.asyncio
+async def test_native_parser_converts_gemma_tool_text_to_tool_call():
+    cfg = Config()
+    cfg.remote.model = "google/gemma-4-12b-qat"
+    b = RemoteOpenAIBackend(cfg)
+
+    async def create(*a, **k):
+        async def stream():
+            yield _chunk(
+                content=(
+                    "<|channel>thought\ninspect first\n<channel|>"
+                    "<|tool_call>call:get_active_notebook{}<tool_call|>"
+                ),
+                finish_reason="stop",
+            )
+        return stream()
+
+    b._client = _fake_client(create)
+    deltas = [
+        delta
+        async for delta in b.stream(
+            [{"role": "user", "content": "go"}], [], OutputConstraint.none(), SamplingParams()
+        )
+    ]
+
+    assert [d.reasoning for d in deltas if d.reasoning] == ["inspect first"]
+    calls = [d.tool_call for d in deltas if d.tool_call is not None]
+    assert len(calls) == 1
+    assert calls[0].name == "get_active_notebook"
+    assert calls[0].arguments == {}

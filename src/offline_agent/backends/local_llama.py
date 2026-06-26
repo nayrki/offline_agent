@@ -188,8 +188,9 @@ class LocalLlamaBackend(ModelBackend):
     ) -> AsyncIterator[StreamDelta]:
         grammar = self._build_grammar(constraint)
         use_guided = grammar is not None
-        # Harmony/gpt-oss: render via the GGUF template (tools= still passed) but
-        # parse the channel output ourselves, since llama_cpp emits no tool_calls.
+        # Some native templates (notably Harmony/gpt-oss and some Gemma stacks)
+        # emit a model-family DSL in content instead of structured tool_calls.
+        # Buffer that content and parse it ourselves only if no real tool_calls arrive.
         native_parser = None if use_guided else self._fmt.native_parser
 
         # The GGUF jinja template (llama_chat_format is None) tojson's tool-call
@@ -248,13 +249,12 @@ class LocalLlamaBackend(ModelBackend):
             if use_guided:
                 if delta.get("content"):
                     guided_text.append(delta["content"])
-            elif native_parser is not None:
-                # Buffer the whole turn; channel markers can't be parsed midstream.
-                if delta.get("content"):
-                    native_text.append(delta["content"])
             else:
                 if delta.get("content"):
-                    yield StreamDelta(text=delta["content"])
+                    if native_parser is not None:
+                        native_text.append(delta["content"])
+                    else:
+                        yield StreamDelta(text=delta["content"])
                 for tc in delta.get("tool_calls") or []:
                     idx = tc.get("index", 0)
                     slot = partial_tools.setdefault(idx, {"id": "", "name": "", "args": ""})
@@ -274,19 +274,21 @@ class LocalLlamaBackend(ModelBackend):
             if tc is not None:
                 yield StreamDelta(tool_call=tc)
                 stop_reason = "tool_use"
-        elif native_parser is not None:
-            turn = native_parser("".join(native_text))
-            if turn.reasoning:
-                yield StreamDelta(reasoning=turn.reasoning)
-            if turn.content:
-                yield StreamDelta(text=turn.content)
-            if turn.tool_call is not None:
-                yield StreamDelta(tool_call=turn.tool_call)
-                stop_reason = "tool_use"
         else:
+            emitted_tools = False
             for slot in partial_tools.values():
                 if slot["name"]:
                     yield StreamDelta(tool_call=to_tool_call(slot))
+                    stop_reason = "tool_use"
+                    emitted_tools = True
+            if not emitted_tools and native_parser is not None and native_text:
+                turn = native_parser("".join(native_text))
+                if turn.reasoning:
+                    yield StreamDelta(reasoning=turn.reasoning)
+                if turn.content:
+                    yield StreamDelta(text=turn.content)
+                if turn.tool_call is not None:
+                    yield StreamDelta(tool_call=turn.tool_call)
                     stop_reason = "tool_use"
 
         yield StreamDelta(finished=True, stop_reason=stop_reason)

@@ -62,9 +62,10 @@ def test_auto_selects_harmony_for_gpt_oss():
 
 
 def test_auto_falls_through_to_default_for_other_models():
-    # Gemma / Llama / unknown => "default": trust the server/GGUF template's own
-    # native tool calling (no in-process Harmony parsing).
-    for ident in ("google/gemma-4-12b-qat", "gemma2", "meta-llama/Llama-3.1-8B", ""):
+    # Llama / unknown => "default": trust the server/GGUF template's own native
+    # tool calling. Gemma is handled separately because some stacks expose its
+    # native tool DSL as plain text rather than structured tool_calls.
+    for ident in ("meta-llama/Llama-3.1-8B", "", "mistralai/Mistral-7B-Instruct"):
         fmt = resolve_chat_format("auto", model_id=ident)
         assert fmt.name == "default"
         assert fmt.native_parser is None

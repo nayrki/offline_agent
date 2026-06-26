@@ -22,6 +22,7 @@ from typing import Callable
 from ..backends._parsing import parse_envelope
 from ..backends.base import ToolCall
 from ..backends.grammars import tool_call_schema
+from .gemma import parse_gemma
 from .harmony import NativeTurn, parse_harmony
 
 
@@ -75,10 +76,12 @@ def available() -> list[str]:
 # backend), lowercased. First match wins; anything unmatched falls through to
 # ``default`` -- i.e. trust the server's / GGUF template's own native tool
 # calling. Only families whose native output is NOT OpenAI tool_calls need a
-# rule here; today that is just gpt-oss (Harmony).
+# rule here; today that is gpt-oss (Harmony) and Gemma stacks that surface their
+# native tool DSL as plain assistant text rather than structured tool_calls.
 _AUTO_RULES: tuple[tuple[str, str], ...] = (
     ("gpt-oss", "gpt-oss"),
     ("gpt_oss", "gpt-oss"),
+    ("gemma", "gemma"),
 )
 
 
@@ -121,7 +124,7 @@ register(ChatFormat("chatml-function-calling", llama_chat_format="chatml-functio
 register(ChatFormat("chatml", llama_chat_format="chatml"))
 register(ChatFormat("llama3", llama_chat_format="llama-3"))
 register(ChatFormat("mistral", llama_chat_format="mistral-instruct"))
-register(ChatFormat("gemma", llama_chat_format="gemma"))
+register(ChatFormat("gemma", llama_chat_format="gemma", native_parser=parse_gemma))
 register(ChatFormat("functionary", llama_chat_format="functionary-v2"))
 
 # gpt-oss speaks Harmony, not OpenAI tool_calls. Render with the GGUF's own

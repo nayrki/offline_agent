@@ -180,7 +180,9 @@ class RemoteOpenAIBackend(ModelBackend):
         # Accumulators for native tool_calls (keyed by index) and guided JSON text.
         partial_tools: dict[int, dict[str, str]] = {}
         guided_text: list[str] = []
+        native_text: list[str] = []
         stop_reason = "end_turn"
+        native_parser = None if use_guided else self._fmt.native_parser
 
         async for chunk in stream:
             if not chunk.choices:
@@ -197,7 +199,10 @@ class RemoteOpenAIBackend(ModelBackend):
                     guided_text.append(delta.content)
             else:
                 if delta and delta.content:
-                    yield StreamDelta(text=delta.content)
+                    if native_parser is not None:
+                        native_text.append(delta.content)
+                    else:
+                        yield StreamDelta(text=delta.content)
                 if delta and delta.tool_calls:
                     for tc in delta.tool_calls:
                         slot = partial_tools.setdefault(tc.index, {"id": "", "name": "", "args": ""})
@@ -218,11 +223,22 @@ class RemoteOpenAIBackend(ModelBackend):
                 yield StreamDelta(tool_call=tc)
                 stop_reason = "tool_use"
         else:
+            emitted_tools = False
             for slot in partial_tools.values():
                 if not slot["name"]:
                     continue
                 yield StreamDelta(tool_call=to_tool_call(slot))
                 stop_reason = "tool_use"
+                emitted_tools = True
+            if not emitted_tools and native_parser is not None and native_text:
+                turn = native_parser("".join(native_text))
+                if turn.reasoning:
+                    yield StreamDelta(reasoning=turn.reasoning)
+                if turn.content:
+                    yield StreamDelta(text=turn.content)
+                if turn.tool_call is not None:
+                    yield StreamDelta(tool_call=turn.tool_call)
+                    stop_reason = "tool_use"
 
         yield StreamDelta(finished=True, stop_reason=stop_reason)
 
