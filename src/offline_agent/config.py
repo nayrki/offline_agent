@@ -1,8 +1,9 @@
 """Configuration schema and loader.
 
-Config is read (in order of increasing precedence) from defaults, an
-``offline_agent.toml`` file, and ``OFFLINE_AGENT_*`` environment variables.
-The TOML path may be overridden with ``OFFLINE_AGENT_CONFIG``.
+Config is read (in order of increasing precedence) from the packaged default
+``default_offline_agent.toml``, an optional ``offline_agent.toml`` in the
+current working directory, and ``OFFLINE_AGENT_*`` environment variables. The
+cwd TOML path may be overridden with ``OFFLINE_AGENT_CONFIG``.
 """
 
 from __future__ import annotations
@@ -20,8 +21,13 @@ from pydantic_settings import (
 )
 
 
+def _default_config_path() -> Path:
+    return Path(__file__).with_name("default_offline_agent.toml")
+
+
 def _config_path() -> Path:
-    return Path(os.environ.get("OFFLINE_AGENT_CONFIG", "offline_agent.toml"))
+    raw = os.environ.get("OFFLINE_AGENT_CONFIG")
+    return Path(raw) if raw else Path.cwd() / "offline_agent.toml"
 
 
 class LocalConfig(BaseModel):
@@ -40,12 +46,12 @@ class LocalConfig(BaseModel):
 class RemoteConfig(BaseModel):
     """OpenAI-compatible remote endpoint (vLLM, LM Studio, Ollama, ...)."""
 
-    # Default targets a local OpenAI-compatible server. LM Studio's default port
-    # is 1234; Ollama's OpenAI-compat shim is on 11434. Plain chat-completions
-    # only -- no server-specific extensions are assumed.
-    base_url: str = "http://localhost:1234/v1"
+    # Default targets the local llama.cpp OpenAI-compatible server wrapper used
+    # by this project. Plain chat-completions only -- no server-specific
+    # extensions are assumed.
+    base_url: str = "http://localhost:10101/v1"
     api_key: str = "EMPTY"  # ignored by local servers, but the openai SDK requires a value
-    model: str = ""
+    model: str = "gemma4"
     guided_decoding_backend: str = "auto"  # vLLM: auto | xgrammar | guidance
     # Reasoning/thinking budget for reasoning models (gpt-oss, Gemma-qat,
     # DeepSeek, ...), sent as ``reasoning_effort`` in the request body. Empty
@@ -53,7 +59,7 @@ class RemoteConfig(BaseModel):
     # the practical fix when a model burns the whole token budget reasoning about
     # otherwise-simple asks. Graduated values ("minimal"/"low"/"medium"/"high")
     # are server-dependent. Ignored by servers that don't recognize the field.
-    reasoning_effort: str = ""
+    reasoning_effort: str = "none"
     # Skip the guided-decoding probe and go straight to native tools= + validate-retry.
     force_native_tools: bool = False
     request_timeout: float = 120.0
@@ -66,7 +72,7 @@ class SamplingConfig(BaseModel):
     temperature: float = 0.0
     top_p: float = 1.0
     top_k: int | None = None
-    max_tokens: int = 2048
+    max_tokens: int = 4096
     seed: int | None = None
     stop: list[str] | None = None
 
@@ -89,13 +95,14 @@ class FsConfig(BaseModel):
 
 
 class BackendConfig(BaseModel):
-    # Default to the remote OpenAI-compatible endpoint; if it is unreachable at
-    # session start and fallback_to_local is set, make_backend transparently
-    # loads the in-process llama.cpp model instead.
+    # Default to the remote OpenAI-compatible endpoint backed by the local
+    # llama.cpp server wrapper. If it is unreachable at session start and
+    # fallback_to_local is set, make_backend transparently loads the in-process
+    # llama.cpp model instead.
     mode: Literal["local", "remote"] = "remote"
     # When mode == "remote" and the endpoint fails a liveness probe, fall back to
     # the local llama.cpp backend instead of erroring. No effect in local mode.
-    fallback_to_local: bool = True
+    fallback_to_local: bool = False
     # Keys into the chat_formats registry (offline_agent.chat_formats). Selects
     # the llama_cpp chat_format for native tool calling and the forced tool-call
     # envelope. "auto" (default) derives it from the ACTIVE model -- the GGUF
@@ -131,9 +138,12 @@ class Config(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        # Precedence: init kwargs > env > TOML file > defaults.
+        # Precedence: init kwargs > env > explicit/cwd TOML > packaged defaults.
         toml = TomlConfigSettingsSource(settings_cls, toml_file=_config_path())
-        return (init_settings, env_settings, toml)
+        packaged_defaults = TomlConfigSettingsSource(
+            settings_cls, toml_file=_default_config_path()
+        )
+        return (init_settings, env_settings, toml, packaged_defaults)
 
 
 def load_config() -> Config:

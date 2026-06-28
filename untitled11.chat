@@ -1,0 +1,81 @@
+{
+  "messages": [
+    {
+      "time": 1782655149.9822743,
+      "type": "msg",
+      "raw_time": false,
+      "body": "@Offline-Agent What does the first cell in this notebook do?",
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "id": "c86def1d-b344-4f21-81e5-640495401ac4",
+      "sender": "49f369a6b4ea4f399f615fc2f5b5e856"
+    },
+    {
+      "body": "",
+      "type": "msg",
+      "raw_time": false,
+      "time": 1782655198.199881,
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "mentions": [],
+      "id": "c1f10a44-f545-442a-8709-4fd1c7245679",
+      "metadata": {
+        "tool_calls": [
+          {
+            "title": "get_active_notebook",
+            "kind": "read",
+            "tool_call_id": "get_active_notebook",
+            "status": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "mentions": [],
+      "raw_time": false,
+      "id": "484ccf30-6573-40ce-af65-b47adf4fb10a",
+      "time": 1782655200.2001007,
+      "type": "msg",
+      "body": "The remote model request to `http://localhost:10101/v1` failed: Error code: 500 - {'error': {'message': '7 validation errors:\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestSystemMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'system\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'system\\'\"}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestUserMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'user\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'user\\'\"}}\\n  {\\'type\\': \\'string_type\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestAssistantMessage\\', \\'tool_calls\\', 0, \\'function\\', \\'arguments\\'), \\'msg\\': \\'Input should be a valid string\\', \\'input\\': {}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestToolMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'tool\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'tool\\'\"}}\\n  {\\'type\\': \\'missing\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestToolMessage\\', \\'tool_call_id\\'), \\'msg\\': \\'Field required\\', \\'input\\': {\\'role\\': \\'assistant\\', \\'content\\': \\'\\', \\'tool_calls\\': [{\\'id\\': \\'get_active_notebook\\', \\'type\\': \\'function\\', \\'function\\': {\\'name\\': \\'get_active_notebook\\', \\'arguments\\': {}}}]}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestFunctionMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'function\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'function\\'\"}}\\n  {\\'type\\': \\'missing\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestFunctionMessage\\', \\'name\\'), \\'msg\\': \\'Field required\\', \\'input\\': {\\'role\\': \\'assistant\\', \\'content\\': \\'\\', \\'tool_calls\\': [{\\'id\\': \\'get_active_notebook\\', \\'type\\': \\'function\\', \\'function\\': {\\'name\\': \\'get_active_notebook\\', \\'arguments\\': {}}}]}}\\n\\n  File \"/xfs1/groups/ornl/home/rskitchen/python_environment/virtualenv/lib/python3.11/site-packages/llama_cpp/server/app.py\", line 376, in create_chat_completion\\n    POST /v1/chat/completions', 'type': 'internal_server_error', 'param': None, 'code': None}}\n\nCheck the remote server and the `[remote]` settings in `offline_agent.toml`."
+    }
+  ],
+  "users": {
+    "jupyter-ai-personas::offline_agent::OfflineAgentPersona": {
+      "initials": null,
+      "username": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "display_name": "Offline Agent",
+      "name": "Offline Agent",
+      "color": null,
+      "bot": true,
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Aoffline_agent%3A%3AOfflineAgentPersona"
+    },
+    "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": {
+      "bot": true,
+      "name": "Copilot",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Ajupyter_ai_acp_client%3A%3ACopilotAcpPersona",
+      "display_name": "Copilot",
+      "initials": null,
+      "username": "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona",
+      "color": null
+    },
+    "49f369a6b4ea4f399f615fc2f5b5e856": {
+      "avatar_url": null,
+      "display_name": "Anonymous Io",
+      "initials": "AI",
+      "bot": false,
+      "color": "var(--jp-collaborator-color4)",
+      "name": "Anonymous Io",
+      "username": "49f369a6b4ea4f399f615fc2f5b5e856",
+      "mention_name": "Anonymous-Io"
+    }
+  },
+  "attachments": {},
+  "metadata": {
+    "id": "3215d7c4-863a-4a17-aff2-c43b154cc352",
+    "acp_session_ids": {
+      "jupyter-ai-personas::offline_agent::OfflineAgentPersona": "b0b86454b3ab4017b9891445ebff576b",
+      "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": "ae541d88-682c-4389-92b1-a7c4ad50ffe5"
+    }
+  }
+}

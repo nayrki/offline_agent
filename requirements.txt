@@ -18,4 +18,4 @@ pydantic-settings>=2.2
 # Compiles llama-cpp-python with CUDA offload enabled. Requires the CUDA
 # toolkit (nvcc) and a C/C++ compiler on PATH. For a CPU-only build, drop the
 # config-settings flag (or run ./install.sh --cpu).
-llama-cpp-python -C cmake.args="-DGGML_CUDA=on"
+#llama-cpp-python -C cmake.args="-DGGML_CUDA=on"

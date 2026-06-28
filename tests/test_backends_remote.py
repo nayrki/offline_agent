@@ -228,3 +228,35 @@ async def test_native_parser_converts_gemma_tool_text_to_tool_call():
     assert len(calls) == 1
     assert calls[0].name == "get_active_notebook"
     assert calls[0].arguments == {}
+
+
+@pytest.mark.asyncio
+async def test_history_tool_call_arguments_are_sent_as_json_strings():
+    b = _backend()
+    captured = {}
+
+    async def create(*a, **k):
+        captured.update(k)
+        return _empty_stream()
+
+    b._client = _fake_client(create)
+    messages = [
+        {"role": "user", "content": "go"},
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "t1",
+                    "type": "function",
+                    "function": {"name": "run_cell", "arguments": '{"index": 1}'},
+                }
+            ],
+        },
+    ]
+
+    async for _ in b.stream(messages, [], OutputConstraint.none(), SamplingParams()):
+        pass
+
+    sent = captured["messages"][1]["tool_calls"][0]["function"]["arguments"]
+    assert sent == '{"index": 1}'

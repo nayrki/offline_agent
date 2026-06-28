@@ -1,0 +1,31 @@
+[backend]
+mode = "remote"
+fallback_to_local = false
+chat_handler = "auto"
+
+[local]
+n_gpu_layers = -1
+n_ctx = 32768
+use_kv_snapshot = false
+
+[remote]
+base_url = "http://localhost:10101/v1"
+api_key = "EMPTY"
+model = "gemma4"
+reasoning_effort = "none"
+guided_decoding_backend = "auto"
+force_native_tools = false
+connect_timeout = 5.0
+
+[sampling]
+temperature = 0.0
+top_p = 1.0
+max_tokens = 4096
+seed = 0
+
+[constraints]
+tool_call_mode = "native"
+max_tool_turns = 20
+
+[fs]
+allow_write = true

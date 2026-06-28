@@ -97,6 +97,53 @@ def _request_tools(session: Session, config: Config) -> list[dict]:
     return session.tools + [_FINAL_ANSWER_TOOL]
 
 
+def _format_backend_error(exc: Exception, config: Config) -> str:
+    detail = str(exc).strip() or exc.__class__.__name__
+    if config.backend.mode == "remote":
+        url = config.remote.base_url
+        model = config.remote.model or "<unset>"
+        low = detail.lower()
+        if exc.__class__.__name__ == "APIConnectionError" or detail == "Connection error.":
+            return (
+                f"I couldn't reach the configured remote model endpoint at `{url}`.\n\n"
+                "Check that the server is running and that `[remote].base_url` is correct. "
+                "If you want the built-in llama.cpp backend instead, switch `[backend] mode` "
+                "to `\"local\"` (or enable `fallback_to_local` with a valid `local.model_path`)."
+            )
+        if exc.__class__.__name__ == "NotFoundError" or (
+            "model" in low and "not found" in low
+        ):
+            return (
+                f"The remote endpoint at `{url}` could not find model `{model}`.\n\n"
+                "Check `[remote].model` against the ids exposed by the server's `/v1/models` endpoint."
+            )
+        return (
+            f"The remote model request to `{url}` failed: {detail}\n\n"
+            "Check the remote server and the `[remote]` settings in `offline_agent.toml`."
+        )
+    if config.backend.mode == "local":
+        model_path = config.local.model_path or "<unset>"
+        return (
+            f"I couldn't use the local model at `{model_path}`: {detail}\n\n"
+            "Check `[local].model_path` and confirm the GGUF is present and readable."
+        )
+    return f"I couldn't complete that because the model backend failed: {detail}"
+
+
+async def _report_backend_error(
+    conn,
+    session: Session,
+    config: Config,
+    exc: Exception,
+    message_id: str | None,
+) -> PromptResponse:
+    msg = _format_backend_error(exc, config)
+    log.warning("backend request failed", exc_info=exc)
+    await conn.session_update(session.session_id, update_agent_message(text_block(msg)))
+    session.messages.append({"role": "assistant", "content": msg})
+    return PromptResponse(stop_reason="end_turn", user_message_id=message_id)
+
+
 async def run_agent_loop(
     conn,
     session: Session,
@@ -121,26 +168,29 @@ async def run_agent_loop(
         tool_calls: list[ToolCall] = []
         stop_reason = "end_turn"
 
-        async for delta in session.backend.stream(
-            session.messages, _request_tools(session, config), constraint, sampling
-        ):
-            if delta.text:
-                text_parts.append(delta.text)
-                await conn.session_update(
-                    session.session_id, update_agent_message(text_block(delta.text))
-                )
-            if delta.reasoning:
-                # Chain-of-thought: shown as a distinct ACP thought, never folded
-                # into the answer. Also means a reasoning-only turn isn't mistaken
-                # for the model producing nothing at all.
-                reasoning_parts.append(delta.reasoning)
-                await conn.session_update(
-                    session.session_id, update_agent_thought(text_block(delta.reasoning))
-                )
-            if delta.tool_call is not None:
-                tool_calls.append(delta.tool_call)
-            if delta.finished and delta.stop_reason:
-                stop_reason = delta.stop_reason
+        try:
+            async for delta in session.backend.stream(
+                session.messages, _request_tools(session, config), constraint, sampling
+            ):
+                if delta.text:
+                    text_parts.append(delta.text)
+                    await conn.session_update(
+                        session.session_id, update_agent_message(text_block(delta.text))
+                    )
+                if delta.reasoning:
+                    # Chain-of-thought: shown as a distinct ACP thought, never folded
+                    # into the answer. Also means a reasoning-only turn isn't mistaken
+                    # for the model producing nothing at all.
+                    reasoning_parts.append(delta.reasoning)
+                    await conn.session_update(
+                        session.session_id, update_agent_thought(text_block(delta.reasoning))
+                    )
+                if delta.tool_call is not None:
+                    tool_calls.append(delta.tool_call)
+                if delta.finished and delta.stop_reason:
+                    stop_reason = delta.stop_reason
+        except Exception as exc:  # noqa: BLE001 - convert backend failures into user-visible replies
+            return await _report_backend_error(conn, session, config, exc, message_id)
 
         # In forced mode a final_answer "tool call" is really the assistant text.
         final = _take_final_answer(tool_calls)
@@ -275,7 +325,7 @@ def _assistant_message(
             {
                 "id": tc.id,
                 "type": "function",
-                "function": {"name": tc.name, "arguments": json.dumps(tc.arguments)},
+                "function": {"name": tc.name, "arguments": tc.arguments},
             }
             for tc in tool_calls
         ]

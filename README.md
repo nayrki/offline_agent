@@ -66,7 +66,7 @@ The agent subprocess is intentionally lightweight (no GPU deps). Install it into
 whatever environment runs your **Jupyter Server**:
 
 ```bash
-pip install -e ".[jupyter]"     # pulls jupyter-ai-acp-client so the persona registers
+uv pip install -e ".[jupyter]"  # pulls jupyter-ai-acp-client so the persona registers
 ```
 
 `[jupyter]` is required only in the JupyterLab environment — it pulls
@@ -150,7 +150,7 @@ chat format. Set `[backend] chat_handler` to one of:
 | `chatml-function-calling` | `chatml-function-calling` | a ChatML model whose template lacks tool support — adds generic OpenAI-style function calling |
 | `llama3` | `llama-3` | Llama 3.x Instruct |
 | `mistral` | `mistral-instruct` | Mistral Instruct |
-| `gemma` | `gemma` | Gemma |
+| `gemma` | `gemma` | Gemma; also parses raw `<|tool_call>call:...` turns when a server returns them as plain text |
 | `functionary` | `functionary-v2` | Functionary |
 | `chatml` | `chatml` | plain ChatML (no tool calling) |
 | `gpt-oss` | *(GGUF's own template)* | gpt-oss / OpenAI Harmony — see note below |
@@ -212,13 +212,14 @@ tool_call_mode = "json_schema"  # JSON-schema envelope (local: from_json_schema;
 
 ## 3. Configure
 
-Config is read (increasing precedence) from **defaults → `offline_agent.toml` →
-`OFFLINE_AGENT_*` env vars**. Override the file path with `OFFLINE_AGENT_CONFIG`.
-Copy the example and edit:
+Config is read (increasing precedence) from **packaged defaults →
+`offline_agent.toml` in the current working directory → `OFFLINE_AGENT_*` env
+vars**. Override the cwd config path with `OFFLINE_AGENT_CONFIG`.
 
-```bash
-cp offline_agent.toml.example offline_agent.toml
-```
+The packaged defaults target the local llama.cpp server wrapper on
+`http://localhost:10101/v1`, use `model = "gemma4"`, and do **not** require an
+offline GGUF model path. Add an `offline_agent.toml` only when you want to
+override those defaults for the Jupyter server's cwd:
 
 ```toml
 [backend]
@@ -263,9 +264,10 @@ OFFLINE_AGENT_REMOTE__BASE_URL=http://10.0.0.5:8000/v1
 OFFLINE_AGENT_LOCAL__MODEL_PATH=/models/llama.gguf
 ```
 
-The agent subprocess loads this config from **its working directory** (the
-JupyterLab server's cwd), so put `offline_agent.toml` there or point
-`OFFLINE_AGENT_CONFIG` at an absolute path via the Jupyter server's environment.
+The agent subprocess first loads its packaged defaults, then overlays an
+`offline_agent.toml` from the **JupyterLab server's working directory** if one
+is present. To force a different file, point `OFFLINE_AGENT_CONFIG` at an
+absolute path via the Jupyter server's environment.
 
 ---
 
@@ -285,12 +287,29 @@ vllm serve meta-llama/Llama-3.1-8B-Instruct \
     # --chat-template <file>         # only if the model's template lacks tools
 ```
 
+For `llama-cpp-python` serving with a local external Jinja template, edit
+`docs/model_server/run_llama_cpp_server.py` and set `MODEL_PATH`, `TEMPLATE_PATH`,
+`N_CTX`, `PORT`, and any optional low-level knobs you need (`FLASH_ATTN`,
+`TYPE_K`, `TYPE_V`). To force a single GPU, leave `SPLIT_MODE = 0` and set
+`MAIN_GPU` to the device index you want. `N_PARALLEL` is included for visibility
+but is currently a no-op because the Python server does not yet expose
+llama.cpp slot/parallel configuration. Then run:
+
+```bash
+python docs/model_server/run_llama_cpp_server.py
+```
+
 The backend **probes** the endpoint once per session for guided decoding
 (`guided_grammar`/`guided_json`). If present, `tool_call_mode = "grammar"` /
 `"json_schema"` constrains output server-side; if the probe 400s (or you set
 `force_native_tools = true`), it falls back to native `tools=` with
 validate-and-retry. vLLM's automatic prefix caching gives the same
 cached-prefix benefit as the local backend's implicit KV reuse.
+
+If the configured endpoint is down or the URL is wrong, the agent now replies
+with a direct configuration error instead of bubbling an ACP `Internal error`.
+Check `[remote] base_url`, confirm the server is reachable, or switch
+`[backend] mode = "local"` / enable `fallback_to_local`.
 
 ---
 
@@ -337,7 +356,7 @@ the subprocess, which reloads config.
 The agent speaks ACP over stdio, so you can drive it without JupyterLab:
 
 ```bash
-offline-agent        # reads offline_agent.toml from the cwd; logs to stderr
+offline-agent        # uses packaged defaults, plus offline_agent.toml from the cwd if present
 ```
 
 For a stub run with no model or GPU, the backend can be replaced via

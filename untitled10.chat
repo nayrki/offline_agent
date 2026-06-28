@@ -1,0 +1,82 @@
+{
+  "messages": [
+    {
+      "raw_time": false,
+      "id": "08c7fe97-22a4-4911-aa39-ec956651df13",
+      "time": 1782654868.5813591,
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "type": "msg",
+      "sender": "49f369a6b4ea4f399f615fc2f5b5e856",
+      "body": "@Offline-Agent what does the first cell in this notebook do?"
+    },
+    {
+      "time": 1782654922.0652168,
+      "raw_time": false,
+      "metadata": {
+        "tool_calls": [
+          {
+            "status": "completed",
+            "kind": "read",
+            "tool_call_id": "get_active_notebook",
+            "title": "get_active_notebook"
+          }
+        ]
+      },
+      "body": "",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "id": "1ec5f542-acbc-40e1-9d62-995db658e135",
+      "mentions": [],
+      "type": "msg"
+    },
+    {
+      "raw_time": false,
+      "id": "f4cb4098-4cf2-4df1-b2c4-108cc187b3bd",
+      "type": "msg",
+      "mentions": [],
+      "body": "The remote model request to `http://localhost:10101/v1` failed: Error code: 500 - {'error': {'message': '7 validation errors:\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestSystemMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'system\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'system\\'\"}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestUserMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'user\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'user\\'\"}}\\n  {\\'type\\': \\'string_type\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestAssistantMessage\\', \\'tool_calls\\', 0, \\'function\\', \\'arguments\\'), \\'msg\\': \\'Input should be a valid string\\', \\'input\\': {}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestToolMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'tool\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'tool\\'\"}}\\n  {\\'type\\': \\'missing\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestToolMessage\\', \\'tool_call_id\\'), \\'msg\\': \\'Field required\\', \\'input\\': {\\'role\\': \\'assistant\\', \\'content\\': \\'\\', \\'tool_calls\\': [{\\'id\\': \\'get_active_notebook\\', \\'type\\': \\'function\\', \\'function\\': {\\'name\\': \\'get_active_notebook\\', \\'arguments\\': {}}}], \\'reasoning_content\\': \\'The user is asking about the first cell of \"this notebook\". I need to identify which notebook they are referring to. Since no specific file path was provided, I should check for the active notebook.\\'}}\\n  {\\'type\\': \\'literal_error\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestFunctionMessage\\', \\'role\\'), \\'msg\\': \"Input should be \\'function\\'\", \\'input\\': \\'assistant\\', \\'ctx\\': {\\'expected\\': \"\\'function\\'\"}}\\n  {\\'type\\': \\'missing\\', \\'loc\\': (\\'body\\', \\'messages\\', 2, \\'ChatCompletionRequestFunctionMessage\\', \\'name\\'), \\'msg\\': \\'Field required\\', \\'input\\': {\\'role\\': \\'assistant\\', \\'content\\': \\'\\', \\'tool_calls\\': [{\\'id\\': \\'get_active_notebook\\', \\'type\\': \\'function\\', \\'function\\': {\\'name\\': \\'get_active_notebook\\', \\'arguments\\': {}}}], \\'reasoning_content\\': \\'The user is asking about the first cell of \"this notebook\". I need to identify which notebook they are referring to. Since no specific file path was provided, I should check for the active notebook.\\'}}\\n\\n  File \"/xfs1/groups/ornl/home/rskitchen/python_environment/virtualenv/lib/python3.11/site-packages/llama_cpp/server/app.py\", line 376, in create_chat_completion\\n    POST /v1/chat/completions', 'type': 'internal_server_error', 'param': None, 'code': None}}\n\nCheck the remote server and the `[remote]` settings in `offline_agent.toml`.",
+      "time": 1782654931.8988814,
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+    }
+  ],
+  "users": {
+    "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": {
+      "display_name": "Copilot",
+      "username": "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Ajupyter_ai_acp_client%3A%3ACopilotAcpPersona",
+      "color": null,
+      "bot": true,
+      "name": "Copilot",
+      "initials": null
+    },
+    "49f369a6b4ea4f399f615fc2f5b5e856": {
+      "bot": false,
+      "username": "49f369a6b4ea4f399f615fc2f5b5e856",
+      "display_name": "Anonymous Io",
+      "initials": "AI",
+      "name": "Anonymous Io",
+      "color": "var(--jp-collaborator-color4)",
+      "avatar_url": null,
+      "mention_name": "Anonymous-Io"
+    },
+    "jupyter-ai-personas::offline_agent::OfflineAgentPersona": {
+      "bot": true,
+      "color": null,
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Aoffline_agent%3A%3AOfflineAgentPersona",
+      "mention_name": "Offline-Agent",
+      "username": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "initials": null,
+      "name": "Offline Agent",
+      "display_name": "Offline Agent"
+    }
+  },
+  "attachments": {},
+  "metadata": {
+    "acp_session_ids": {
+      "jupyter-ai-personas::offline_agent::OfflineAgentPersona": "620d0f2ebcfd4dbaa5b98dc3536d3948",
+      "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": "66f8ff15-806d-406e-9a05-e4811251e437"
+    },
+    "id": "b97418e2-c3e7-4e7c-b198-6576f59eaba3"
+  }
+}

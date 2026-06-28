@@ -14,6 +14,7 @@ from typing import Any, AsyncIterator
 
 from ..chat_formats import resolve_chat_format
 from ..config import Config
+from ._messages import tool_call_arguments_as_json_strings
 from ._parsing import map_finish_reason, to_tool_call
 from .base import (
     Capabilities,
@@ -172,7 +173,7 @@ class RemoteOpenAIBackend(ModelBackend):
 
         stream = await self._client.chat.completions.create(
             model=self._rcfg.model,
-            messages=messages,
+            messages=tool_call_arguments_as_json_strings(messages),
             stream=True,
             **kwargs,
         )

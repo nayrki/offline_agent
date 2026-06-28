@@ -14,25 +14,35 @@ rem Override the interpreter with:  set PYTHON=C:\path\to\python.exe
 rem ===========================================================================
 setlocal EnableExtensions
 if not defined PYTHON set "PYTHON=python"
-
+rem Accept either set PYTHON=C:\path\python.exe or set PYTHON="C:\path\python.exe".
+set "PYTHON=%PYTHON:"=%"
+"%PYTHON%" --version
+if errorlevel 1 goto bad_python
 rem The config fragment shipped next to this script (in scripts\).
 set "SNIPPET=%~dp0scripts\win_proactor_eventloop.py"
+set "JUPYTER_HELPER=%~dp0scripts\jupyter_config_dir.py"
 set "MARKER=offline-agent: Windows Proactor"
 
 rem NOTE: paths may contain spaces or parentheses (e.g. "Program Files (x86)"),
 rem so we keep %SNIPPET%/%TARGET% out of parenthesized ( ) blocks and branch
 rem with goto instead -- a ')' inside an expanded path would break block parsing.
 if not exist "%SNIPPET%" goto no_snippet
+if not exist "%JUPYTER_HELPER%" goto no_helper
 
 rem Resolve the Jupyter config dir for the ACTIVE environment (honors
 rem JUPYTER_CONFIG_DIR). If jupyter-core isn't installed, Jupyter isn't set up
 rem in this env yet -- soft-skip rather than fail the install.
 set "CFGDIR="
-for /f "usebackq delims=" %%D in (`"%PYTHON%" -c "from jupyter_core.paths import jupyter_config_dir as d; print(d())" 2^>nul`) do set "CFGDIR=%%D"
+set "CFGFILE=%TEMP%\offline-agent-jupyter-config-%RANDOM%-%RANDOM%.txt"
+"%PYTHON%" "%JUPYTER_HELPER%" >"%CFGFILE%" 2>nul
+if errorlevel 1 goto no_jupyter
+set /p "CFGDIR="<"%CFGFILE%"
+del /q "%CFGFILE%" >nul 2>&1
 if not defined CFGDIR goto no_jupyter
 
 set "TARGET=%CFGDIR%\jupyter_server_config.py"
 if not exist "%CFGDIR%" mkdir "%CFGDIR%"
+if not exist "%CFGDIR%" goto write_fail
 
 if not exist "%TARGET%" goto apply
 findstr /c:"%MARKER%" "%TARGET%" >nul 2>&1
@@ -47,6 +57,7 @@ echo [win-patch]   %TARGET%
 rem Blank line then the fragment, so it never glues onto an existing last line.
 echo.>>"%TARGET%"
 type "%SNIPPET%">>"%TARGET%"
+findstr /c:"%MARKER%" "%TARGET%" >nul 2>&1
 if errorlevel 1 goto write_fail
 echo [win-patch] done. Restart 'jupyter lab' for it to take effect.
 endlocal & exit /b 0
@@ -55,11 +66,19 @@ endlocal & exit /b 0
 echo [win-patch] missing fragment "%SNIPPET%"; nothing to apply. 1>&2
 endlocal & exit /b 1
 
+:no_helper
+echo [win-patch] missing helper "%JUPYTER_HELPER%"; nothing to apply. 1>&2
+endlocal & exit /b 1
+
 :no_jupyter
-echo [win-patch] jupyter-core not found in this environment; skipping.
+echo [win-patch] jupyter-core is not installed in this Python environment; skipping.
 echo [win-patch] re-run after installing the Jupyter stack, or apply manually per WINDOWS.md.
 endlocal & exit /b 0
 
 :write_fail
 echo [win-patch] FAILED to write "%TARGET%" 1>&2
+endlocal & exit /b 1
+
+:bad_python
+echo [win-patch] Python interpreter "%PYTHON%" is not runnable. 1>&2
 endlocal & exit /b 1

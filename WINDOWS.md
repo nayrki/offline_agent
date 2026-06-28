@@ -48,12 +48,9 @@ uv pip install -e ".[jupyter]"
 
 (or `".[lab]"` to also pull JupyterLab + Jupyter AI into this env).
 
-`uv` is a strict resolver and will hit a real dependency conflict:
-`jupyter-ai-acp-client` caps `agent-client-protocol<0.10`, but the agent is
-verified against `0.10.x`. The repo's `pyproject.toml` resolves this with a
-`[tool.uv] override-dependencies` entry, which `uv` reads automatically when you
-install from the repo root — no action needed. (Plain `pip` ignores
-`[tool.uv]`; it's more lenient and installs the same combo anyway.)
+`jupyter-ai-acp-client` currently caps `agent-client-protocol<0.10`, so the
+package metadata keeps `agent-client-protocol` broad enough (`>=0.9,<0.11`) for
+the Jupyter extra to resolve cleanly under `uv` as well as `pip`.
 
 ## 3. The event-loop fix (the important one)
 
@@ -116,8 +113,9 @@ jupyter lab
 
 Open the Jupyter AI chat panel and pick (or @-mention) **Offline Agent**.
 
-If the agent can't find its config, point it at one explicitly before launching
-(it otherwise looks for `offline_agent.toml` in the server's working directory):
+The agent always has packaged defaults. To override them for a specific
+JupyterLab launch, either drop an `offline_agent.toml` into the server's working
+directory or point it at one explicitly before launching:
 
 ```bat
 set OFFLINE_AGENT_CONFIG=C:\path\to\offline_agent.toml
@@ -132,6 +130,7 @@ jupyter lab
 | --- | --- | --- |
 | `requires a different Python: 3.14.x not in '>=3.10,<3.13'` | install is targeting the wrong interpreter (often a system 3.14 `pip` on `PATH`) | use a 3.10–3.12 env; install with `uv pip install -e ".[jupyter]"` |
 | `python -m pip` fails in a uv venv | uv venvs have no `pip` | use `uv pip ...` (or `python -m ensurepip` to add pip) |
-| resolver conflict on `agent-client-protocol` | `jupyter-ai-acp-client` caps it `<0.10` | already handled by `[tool.uv] override-dependencies`; install from the repo root with `uv` |
+| resolver conflict on `agent-client-protocol` | stale package metadata from before the ACP range was widened | update to the current checkout, then `uv pip install -e ".[jupyter]"` |
 | `NotImplementedError` in `get_client` on first message | Jupyter forces the Selector loop; ACP needs Proactor for subprocesses | run `patch_windows.bat` (or `install.bat`), then restart `jupyter lab` |
+| ACP `Internal error` with `{"details":"Connection error."}` on prompt | the configured OpenAI-compatible endpoint is unreachable or `[remote].base_url` is wrong | check the remote server, fix `[remote].base_url`, or switch `[backend] mode` to `local` / enable `fallback_to_local` |
 | persona doesn't appear at all | package not installed in the env running `jupyter lab` (a bare clone isn't enough) | `uv pip install -e ".[jupyter]"` in that env |

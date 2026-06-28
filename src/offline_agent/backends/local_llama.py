@@ -16,6 +16,7 @@ from typing import Any, AsyncIterator
 
 from ..chat_formats import resolve_chat_format
 from ..config import Config
+from ._messages import tool_call_arguments_as_json_strings, tool_call_arguments_as_objects
 from ._parsing import map_finish_reason, to_tool_call
 from .base import (
     Capabilities,
@@ -69,38 +70,6 @@ def read_gguf_architecture(path: str) -> str | None:
     except Exception as exc:  # noqa: BLE001 - detection is best-effort
         log.debug("could not read GGUF architecture from %s: %s", path, exc)
     return None
-
-
-def _objectify_tool_args(messages: list[dict]) -> list[dict]:
-    """Parse OpenAI-style JSON-string tool-call arguments into objects.
-
-    Canonical history stores ``tool_calls[].function.arguments`` as a JSON
-    *string* (OpenAI spec). The GGUF jinja chat template renders them with
-    ``| tojson``, so a string would be re-encoded into a double-quoted literal
-    (``"{\\"k\\": 1}"``); the template needs a dict to emit a JSON object.
-    Returns a shallow copy -- the canonical ``messages`` list is never mutated.
-    """
-    out: list[dict] = []
-    for m in messages:
-        tool_calls = m.get("tool_calls")
-        if not tool_calls:
-            out.append(m)
-            continue
-        new_calls = []
-        for tc in tool_calls:
-            fn = tc.get("function") or {}
-            args = fn.get("arguments")
-            if isinstance(args, str):
-                try:
-                    args = json.loads(args) if args.strip() else {}
-                except json.JSONDecodeError:
-                    args = {}
-                tc = {**tc, "function": {**fn, "arguments": args}}
-            new_calls.append(tc)
-        out.append({**m, "tool_calls": new_calls})
-    return out
-
-
 class LocalLlamaBackend(ModelBackend):
     def __init__(self, config: Config) -> None:
         self._cfg = config
@@ -193,10 +162,13 @@ class LocalLlamaBackend(ModelBackend):
         # Buffer that content and parse it ourselves only if no real tool_calls arrive.
         native_parser = None if use_guided else self._fmt.native_parser
 
-        # The GGUF jinja template (llama_chat_format is None) tojson's tool-call
-        # args, so it needs objects; built-in llama_cpp handlers expect the
-        # OpenAI JSON-string form, so leave those untouched.
-        msgs = _objectify_tool_args(messages) if self._fmt.llama_chat_format is None else messages
+        # GGUF templates render tool-call args through Jinja ``| tojson`` and need
+        # mappings in history; built-in llama_cpp handlers expect JSON strings.
+        msgs = (
+            tool_call_arguments_as_objects(messages)
+            if self._fmt.llama_chat_format is None
+            else tool_call_arguments_as_json_strings(messages)
+        )
 
         kwargs: dict[str, Any] = {
             "messages": msgs,

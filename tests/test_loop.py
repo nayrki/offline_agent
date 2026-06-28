@@ -143,6 +143,33 @@ def tool_call_status(update):
 
 
 @pytest.mark.asyncio
+async def test_remote_backend_connection_error_reported_to_user():
+    class APIConnectionError(Exception):
+        pass
+
+    class ExplodingBackend(StubBackend):
+        async def stream(self, messages, tools, constraint, sampling):
+            self.calls.append({"messages": [dict(m) for m in messages], "tools": tools})
+            raise APIConnectionError("Connection error.")
+            yield  # pragma: no cover - keeps this an async generator
+
+    mcp = StubMCP([])
+    backend = ExplodingBackend(turns=[])
+    session = make_session(backend, mcp)
+    conn = FakeConn()
+    cfg = Config()
+    cfg.backend.mode = "remote"
+    cfg.remote.base_url = "http://localhost:1234/v1"
+
+    resp = await run_agent_loop(conn, session, [{"text": "hello"}], "m1", cfg)
+
+    assert resp.stop_reason == "end_turn"
+    streamed = " ".join(text_block_value(u) or "" for _, u in conn.updates)
+    assert "couldn't reach the configured remote model endpoint" in streamed
+    assert cfg.remote.base_url in streamed
+
+
+@pytest.mark.asyncio
 async def test_mcp_error_marks_tool_call_failed():
     # An MCP tool returning isError must be reported as a FAILED tool call, not
     # silently completed, and its error text must reach the model.
@@ -312,6 +339,7 @@ async def test_reasoning_preserved_in_history_on_tool_turns():
 
     tool_turn = next(m for m in session.messages if m.get("role") == "assistant" and m.get("tool_calls"))
     assert tool_turn.get("reasoning_content") == "I will run the cell."
+    assert tool_turn["tool_calls"][0]["function"]["arguments"] == {"index": 1}
     # The reasoning was resent in the next model call's history.
     assert any(m.get("reasoning_content") == "I will run the cell." for m in backend.calls[1]["messages"])
 

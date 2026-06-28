@@ -1,0 +1,82 @@
+{
+  "messages": [
+    {
+      "body": "@Offline-Agent inspect the python source files in this project repository, and then create a summary of their contents in a new cell in the current notebook",
+      "time": 1782516631.5656204,
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "type": "msg",
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "id": "e5bd88b0-8bde-43d2-9e66-4992007dd174",
+      "raw_time": false
+    },
+    {
+      "body": "",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "time": 1782516697.615232,
+      "id": "844903fd-d0fe-461e-9653-c102dae8afa3",
+      "metadata": {
+        "tool_calls": [
+          {
+            "kind": "execute",
+            "tool_call_id": "execute_command",
+            "title": "execute_command",
+            "status": "completed"
+          }
+        ]
+      },
+      "raw_time": false,
+      "type": "msg",
+      "mentions": []
+    },
+    {
+      "type": "msg",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "raw_time": false,
+      "mentions": [],
+      "id": "25d47c2e-67ff-42e5-9415-46832c51bb58",
+      "time": 1782516697.9025903,
+      "body": "I don't have a response for that. Please try rephrasing your request."
+    }
+  ],
+  "users": {
+    "d7c6bab0ac5d45b5a688ebf0cb6edda7": {
+      "bot": false,
+      "name": "Anonymous Eupheme",
+      "color": "var(--jp-collaborator-color6)",
+      "initials": "AE",
+      "display_name": "Anonymous Eupheme",
+      "mention_name": "Anonymous-Eupheme",
+      "username": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "avatar_url": null
+    },
+    "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": {
+      "name": "Copilot",
+      "username": "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Ajupyter_ai_acp_client%3A%3ACopilotAcpPersona",
+      "display_name": "Copilot",
+      "color": null,
+      "initials": null,
+      "bot": true
+    },
+    "jupyter-ai-personas::offline_agent::OfflineAgentPersona": {
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Aoffline_agent%3A%3AOfflineAgentPersona",
+      "mention_name": "Offline-Agent",
+      "username": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "display_name": "Offline Agent",
+      "color": null,
+      "initials": null,
+      "bot": true,
+      "name": "Offline Agent"
+    }
+  },
+  "attachments": {},
+  "metadata": {
+    "id": "6f1e62bf-f612-44e8-9c33-3eea04a129aa",
+    "acp_session_ids": {
+      "jupyter-ai-personas::offline_agent::OfflineAgentPersona": "d7bf94ad6bc6491b9df67a579d5378ec",
+      "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": "c57f2b72-d7b9-49d9-9d08-44562f1cbabf"
+    }
+  }
+}

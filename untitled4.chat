@@ -1,0 +1,123 @@
+{
+  "messages": [
+    {
+      "raw_time": false,
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "time": 1782499274.6737049,
+      "id": "3a6dd0d0-6519-4551-a3ef-4a41b9ab1ab8",
+      "type": "msg",
+      "body": "@Offline-Agent hello"
+    },
+    {
+      "id": "643b9383-5bea-4358-af14-4f403422b4bd",
+      "body": "I don't have a response for that. Please try rephrasing your request.",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "time": 1782499274.8633893,
+      "type": "msg",
+      "mentions": [],
+      "raw_time": false
+    },
+    {
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "id": "ef831b6e-f746-41a6-ba0d-3827bc8f9e1f",
+      "body": "@Offline-Agent what can you do?",
+      "type": "msg",
+      "time": 1782499291.2982686,
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "raw_time": false
+    },
+    {
+      "time": 1782499291.4873435,
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "type": "msg",
+      "body": "I don't have a response for that. Please try rephrasing your request.",
+      "mentions": [],
+      "raw_time": false,
+      "id": "f2b22b60-3003-4b0f-8d45-26dcfe43a301"
+    },
+    {
+      "raw_time": false,
+      "body": "@Offline-Agent test",
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "id": "cffe3bdc-8ef2-4255-9e39-99bfd4d7680d",
+      "type": "msg",
+      "time": 1782499305.2055676,
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ]
+    },
+    {
+      "type": "msg",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "mentions": [],
+      "body": "I don't have a response for that. Please try rephrasing your request.",
+      "id": "829acb43-ef8a-4dc2-b3c8-ceec5f1a5d1d",
+      "time": 1782499305.3864727,
+      "raw_time": false
+    },
+    {
+      "type": "msg",
+      "id": "faf7a595-65a2-48cf-aaff-4680ae4ec937",
+      "body": "@Offline-Agent hello",
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "raw_time": false,
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ],
+      "time": 1782499396.1042767
+    },
+    {
+      "id": "3b0432db-cb03-47a1-ae31-d5b8236ebbb8",
+      "mentions": [],
+      "body": "Hello! I am your Offline Agent, a coding assistant integrated into your JupyterLab environment. \n\nI can help you with a variety of tasks directly within your workspace, including:\n\n*   **Notebook Management**: I can create new notebooks, read existing ones, add, edit, delete, and run cells.\n*   **Code Execution**: I can write and execute Python code in your notebook to analyze",
+      "type": "msg",
+      "raw_time": false,
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "time": 1782499555.7842362
+    }
+  ],
+  "users": {
+    "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": {
+      "display_name": "Copilot",
+      "bot": true,
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Ajupyter_ai_acp_client%3A%3ACopilotAcpPersona",
+      "username": "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona",
+      "name": "Copilot",
+      "initials": null,
+      "color": null
+    },
+    "d7c6bab0ac5d45b5a688ebf0cb6edda7": {
+      "display_name": "Anonymous Eupheme",
+      "name": "Anonymous Eupheme",
+      "mention_name": "Anonymous-Eupheme",
+      "avatar_url": null,
+      "username": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "bot": false,
+      "initials": "AE",
+      "color": "var(--jp-collaborator-color6)"
+    },
+    "jupyter-ai-personas::offline_agent::OfflineAgentPersona": {
+      "mention_name": "Offline-Agent",
+      "username": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "name": "Offline Agent",
+      "initials": null,
+      "display_name": "Offline Agent",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Aoffline_agent%3A%3AOfflineAgentPersona",
+      "bot": true,
+      "color": null
+    }
+  },
+  "attachments": {},
+  "metadata": {
+    "acp_session_ids": {
+      "jupyter-ai-personas::offline_agent::OfflineAgentPersona": "b2e6b21c07384828ade9eceecefbc8e5",
+      "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": "19cb661f-e643-4919-a098-3d2f6987898c"
+    },
+    "id": "cd6c10b3-cd65-4326-a270-60c6818a181f"
+  }
+}

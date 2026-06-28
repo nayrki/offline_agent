@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from offline_agent.backends.local_llama import _objectify_tool_args
+from offline_agent.backends._messages import (
+    tool_call_arguments_as_json_strings,
+    tool_call_arguments_as_objects,
+)
 
 
 def _msgs(arguments):
@@ -21,24 +24,31 @@ def _msgs(arguments):
 
 
 def test_json_string_args_become_objects():
-    # OpenAI-canonical string args must be parsed to a dict so the GGUF jinja
-    # template's `| tojson` emits {"code": ...}, not a double-encoded string.
-    out = _objectify_tool_args(_msgs('{"code": "print(1)"}'))
+    out = tool_call_arguments_as_objects(_msgs('{"code": "print(1)"}'))
     assert out[1]["tool_calls"][0]["function"]["arguments"] == {"code": "print(1)"}
 
 
 def test_empty_and_malformed_args_normalize_to_empty_dict():
-    assert _objectify_tool_args(_msgs(""))[1]["tool_calls"][0]["function"]["arguments"] == {}
-    assert _objectify_tool_args(_msgs("{bad"))[1]["tool_calls"][0]["function"]["arguments"] == {}
+    assert tool_call_arguments_as_objects(_msgs(""))[1]["tool_calls"][0]["function"]["arguments"] == {}
+    assert tool_call_arguments_as_objects(_msgs("{bad"))[1]["tool_calls"][0]["function"]["arguments"] == {}
 
 
 def test_does_not_mutate_input_messages():
     original = _msgs('{"code": "x"}')
-    _objectify_tool_args(original)
-    # the canonical history still holds the OpenAI string form
+    tool_call_arguments_as_objects(original)
     assert original[1]["tool_calls"][0]["function"]["arguments"] == '{"code": "x"}'
 
 
 def test_messages_without_tool_calls_pass_through():
     msgs = [{"role": "user", "content": "hi"}, {"role": "assistant", "content": "hello"}]
-    assert _objectify_tool_args(msgs) == msgs
+    assert tool_call_arguments_as_objects(msgs) == msgs
+
+
+def test_mapping_args_become_json_strings_for_builtin_handlers():
+    out = tool_call_arguments_as_json_strings(_msgs({"code": "print(1)"}))
+    assert out[1]["tool_calls"][0]["function"]["arguments"] == '{"code": "print(1)"}'
+
+
+def test_stringify_normalizes_non_mapping_args_to_empty_object():
+    out = tool_call_arguments_as_json_strings(_msgs('["x"]'))
+    assert out[1]["tool_calls"][0]["function"]["arguments"] == "{}"

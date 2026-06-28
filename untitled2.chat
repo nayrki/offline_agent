@@ -1,0 +1,62 @@
+{
+  "messages": [
+    {
+      "type": "msg",
+      "sender": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "time": 1782431006.3965814,
+      "id": "84d5eaeb-e67f-4b43-98a7-7e2bf367e204",
+      "body": "@Offline-Agent hello",
+      "raw_time": false,
+      "mentions": [
+        "jupyter-ai-personas::offline_agent::OfflineAgentPersona"
+      ]
+    },
+    {
+      "raw_time": false,
+      "body": "I couldn't reach the configured remote model endpoint at `https://ollama.shakudo.bwxt.net/v1`.\n\nCheck that the server is running and that `[remote].base_url` is correct. If you want the built-in llama.cpp backend instead, switch `[backend] mode` to `\"local\"` (or enable `fallback_to_local` with a valid `local.model_path`).",
+      "id": "b05409e0-6d77-4079-ac6f-35329f702991",
+      "sender": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "time": 1782431008.283782,
+      "mentions": [],
+      "type": "msg"
+    }
+  ],
+  "users": {
+    "jupyter-ai-personas::offline_agent::OfflineAgentPersona": {
+      "username": "jupyter-ai-personas::offline_agent::OfflineAgentPersona",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Aoffline_agent%3A%3AOfflineAgentPersona",
+      "display_name": "Offline Agent",
+      "color": null,
+      "bot": true,
+      "name": "Offline Agent",
+      "initials": null
+    },
+    "d7c6bab0ac5d45b5a688ebf0cb6edda7": {
+      "mention_name": "Anonymous-Eupheme",
+      "avatar_url": null,
+      "color": "var(--jp-collaborator-color6)",
+      "name": "Anonymous Eupheme",
+      "username": "d7c6bab0ac5d45b5a688ebf0cb6edda7",
+      "bot": false,
+      "initials": "AE",
+      "display_name": "Anonymous Eupheme"
+    },
+    "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": {
+      "color": null,
+      "bot": true,
+      "name": "Copilot",
+      "display_name": "Copilot",
+      "username": "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona",
+      "avatar_url": "/api/ai/avatars/jupyter-ai-personas%3A%3Ajupyter_ai_acp_client%3A%3ACopilotAcpPersona",
+      "initials": null
+    }
+  },
+  "attachments": {},
+  "metadata": {
+    "id": "f175afad-7fcd-4c09-a626-040ef50f9368",
+    "acp_session_ids": {
+      "jupyter-ai-personas::offline_agent::OfflineAgentPersona": "00e7c29f82c54ccc9516a8977e2d80b9",
+      "jupyter-ai-personas::jupyter_ai_acp_client::CopilotAcpPersona": "0fe3b114-7c10-4be8-8f0b-f2536df3e6a2"
+    }
+  }
+}
