@@ -5,6 +5,7 @@ __pycache__/
 .pytest_cache/
 /build/
 /dist/
+*.chat
 
 # Vendored wheels/sdists are large; tracked via Git LFS (see .gitattributes).
 
