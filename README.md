@@ -20,12 +20,12 @@ This install flow uses:
 
 ### 1. Create a virtual environment
 
-**Windows (PowerShell)**
+**Windows (cmd)**
 
-```powershell
+```bat
 cd C:\path\to\offline_agent
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 ```
 
@@ -155,10 +155,10 @@ Configuration is optional. The agent loads settings in this order:
 If you want JupyterLab launched from any directory to use a specific config
 file, set:
 
-**Windows (PowerShell)**
+**Windows (cmd)**
 
-```powershell
-$env:OFFLINE_AGENT_CONFIG = "C:\path\to\offline_agent.toml"
+```bat
+set OFFLINE_AGENT_CONFIG=C:\path\to\offline_agent.toml
 jupyter lab
 ```
 
