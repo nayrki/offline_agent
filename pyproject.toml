@@ -7,7 +7,7 @@ name = "offline-agent"
 version = "0.1.0"
 description = "Locally-hosted, offline agentic coding agent for Jupyter AI 3 (ACP)"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11"
 license = { text = "BSD-3-Clause" }
 authors = [{ name = "Ryan Kitchen" }]
 

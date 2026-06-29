@@ -14,8 +14,8 @@ import sys
 
 
 def get(path: str) -> str:
-    # tomllib is 3.11+; on 3.10 just report empty (the caller treats that as
-    # "no current value" and still allows setting one).
+    # tomllib is in the standard library on Python 3.11+, which matches the
+    # package's minimum supported version.
     try:
         import tomllib
     except ModuleNotFoundError:

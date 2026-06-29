@@ -17,24 +17,23 @@ to fix things by hand if needed.
 
 ---
 
-## 1. Use Python 3.10–3.12 (not 3.14)
+## 1. Use Python 3.11 or newer
 
-The package targets `>=3.10,<3.13`, and the vendored llama wheels are built for
-**cp312**. Create the environment with a supported interpreter:
+The package targets `>=3.11`. Create the environment with a supported
+interpreter:
 
 ```bat
 :: with uv
-uv venv --python 3.12
+uv venv .venv
 :: or with stock venv
-py -3.12 -m venv .venv
+py -m venv .venv
 ```
 
 > **Gotcha:** if `pip --version` prints a *different* Python than `python -V`
-> (e.g. a system Python 3.14 on `PATH`), an install will target the wrong
-> interpreter and fail with
-> `requires a different Python: 3.14.x not in '>=3.10,<3.13'`. Don't "fix" this
-> by switching to 3.14 — that breaks the package and the cp312 wheels. Instead
-> install into the right interpreter (see below).
+> or points at a different interpreter than the one you intend to use, an
+> install will target the wrong environment.
+> Make sure both commands point at the same virtual environment before
+> installing.
 
 ## 2. Installing in a `uv` environment
 
@@ -128,7 +127,7 @@ jupyter lab
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `requires a different Python: 3.14.x not in '>=3.10,<3.13'` | install is targeting the wrong interpreter (often a system 3.14 `pip` on `PATH`) | use a 3.10–3.12 env; install with `uv pip install -e ".[jupyter]"` |
+| `requires a different Python` during install | install is targeting the wrong interpreter | activate the intended env and install into that interpreter explicitly |
 | `python -m pip` fails in a uv venv | uv venvs have no `pip` | use `uv pip ...` (or `python -m ensurepip` to add pip) |
 | resolver conflict on `agent-client-protocol` | stale package metadata from before the ACP range was widened | update to the current checkout, then `uv pip install -e ".[jupyter]"` |
 | `NotImplementedError` in `get_client` on first message | Jupyter forces the Selector loop; ACP needs Proactor for subprocesses | run `patch_windows.bat` (or `install.bat`), then restart `jupyter lab` |
