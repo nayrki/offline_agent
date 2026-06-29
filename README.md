@@ -25,8 +25,10 @@ This install flow uses:
 ```bat
 cd C:\path\to\offline_agent
 py -m venv .venv
-call .venv\Scripts\activate.bat
+.\.venv\Scripts\activate
 python -m pip install --upgrade pip
+#### optional but recommended
+pip install uv
 ```
 
 **Linux / macOS**
@@ -44,6 +46,8 @@ Use Python **3.11 or newer**.
 
 ```bash
 pip install -r requirements.txt
+OR
+uv pip install -r requirements.txt
 ```
 
 This installs the lightweight agent runtime. It does **not** install
